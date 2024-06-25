@@ -6,6 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product List</title>
     <style>
+        .header{
+            display: flex;
+            justify-content: space-between;
+            padding: 0px 20px;
+        }
+
+        .header a{
+            text-decoration: none;
+            color: black;
+        }
         .container ul {
             display: flex;
             flex-wrap: wrap;
@@ -45,7 +55,10 @@
 </head>
 
 <body>
-    <h1>Product List</h1>
+    <div class="header">
+        <h1>Product List</h1>
+        <h2><a href="./cart.html" target="_blank">My Cart</a></h2>
+    </div>
     <input type="text" id="filter" class="filter" placeholder="Search by title">
     <div class="container">
         <ul id="product-list"></ul>
