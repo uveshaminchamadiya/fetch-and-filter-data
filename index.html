@@ -1,22 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Product List</title>
     <style>
+        .container ul {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-evenly;
+        }
+
         #product-list {
             list-style-type: none;
             padding: 0;
         }
+
         .product-item {
             border: 1px solid #ddd;
             margin: 10px;
             padding: 10px;
             border-radius: 5px;
+            width: 400px;
+            box-sizing: border-box;
         }
 
-        .filter{
+        .product-item button {
+            cursor: pointer;
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 0.1px solid black;
+        }
+
+        .filter {
             display: flex;
             width: 80%;
             margin: 0px auto;
@@ -25,10 +43,106 @@
         }
     </style>
 </head>
+
 <body>
     <h1>Product List</h1>
     <input type="text" id="filter" class="filter" placeholder="Search by title">
-    <ul id="product-list"></ul>
-    <script src="script.js"></script>
+    <div class="container">
+        <ul id="product-list"></ul>
+    </div>
+    <script>
+        const apiUrl = 'https://fakestoreapi.com/products';
+
+        const getData = async () => {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            return data;
+        }
+
+        const getProductById = async (id) => {
+            const products = await getData();
+            return products.find(product => product.id === id);
+        };
+
+        const createProductList = (products) => {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
+
+            products.forEach(product => {
+                const listItem = document.createElement('li');
+                listItem.className = 'product-item';
+
+                listItem.innerHTML = `
+            <h2>${product.title}</h2>
+            <img src="${product.image}" alt="${product.title}" style="width:100px;"/>
+            <p>${product.description}</p>
+            <p><strong>Price:</strong> $${product.price}</p>
+            <button onclick="addToFavorites(${product.id})">Fav</button>
+            <button onclick="addToCart(${product.id})">Add to Cart</button>
+        `;
+
+                productList.appendChild(listItem);
+            });
+        };
+
+        const handleFilterInput = (products) => {
+            const filterInput = document.getElementById('filter');
+            filterInput.addEventListener('input', () => {
+                const query = filterInput.value.toLowerCase();
+                const filteredProducts = products.filter(product =>
+                    product.title.toLowerCase().includes(query)
+                );
+                createProductList(filteredProducts);
+            });
+        };
+
+        const addToFavorites = async (id) => {
+            const product = await getProductById(id);
+            if (!product) {
+                console.log(`Product with ID ${id} not found.`);
+                return;
+            }
+
+            let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+            if (!favorites.find(fav => fav.id === product.id)) {
+                favorites.push(product);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                alert(`Product added to favorites`);
+            } else {
+                alert(`Product is already in favorites`);
+            }
+        };
+
+        const addToCart = async (id) => {
+            const product = await getProductById(id);
+            if (!product) {
+                console.log(`Product with ID ${id} not found.`);
+                return;
+            }
+
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            let cartItem = cart.find(item => item.id === product.id);
+
+            if (cartItem) {
+                cartItem.qty += 1;
+            } else {
+                product.qty = 1;
+                cart.push(product);
+            }
+
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`Product added to Cart`);
+        };
+
+        const init = async () => {
+            const products = await getData();
+            createProductList(products);
+            handleFilterInput(products);
+        };
+
+        init();
+
+    </script>
 </body>
+
 </html>
